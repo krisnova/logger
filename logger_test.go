@@ -18,13 +18,13 @@ import (
 	"bytes"
 	"fmt"
 	"regexp"
-	"strings"
 	"testing"
 )
 
 const (
-	format    = "%v, %v, %v, all eyes on me!"
-	formatExp = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.* \[%s\]  \d, \d, \d, all eyes on me!`
+	format          = "%v, %v, %v, all eyes on me!"
+	formatExp       = `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.* \[%s\]  \d, \d, \d, all eyes on me!`
+	formatWOTimeExp = `\[%s\]  \d, \d, \d, all eyes on me!`
 )
 
 var (
@@ -35,20 +35,6 @@ func TestMain(m *testing.M) {
 	TestMode = true
 
 	m.Run()
-}
-
-func ExampleTestLog() {
-	Log(format, a...)
-	// Output: 1, 2, 3, all eyes on me!
-}
-
-func TestLog(t *testing.T) {
-	e := fmt.Sprintf(format, a...)
-	g := captureLoggerOutput(Log, format, a)
-
-	if strings.Compare(e, g) != 0 {
-		t.Fatalf("Log should produce '%v' but produces: %v", e, g)
-	}
 }
 
 func TestAlways(t *testing.T) {
@@ -136,6 +122,20 @@ func TestWarning(t *testing.T) {
 
 	if !e.MatchString(g) {
 		t.Fatalf("Info should produce a pattern '%v' but produces: %v", e.String(), g)
+	}
+}
+
+func TestWithoutTimestamps(t *testing.T) {
+	Timestamps = false
+	e, err := regexp.Compile(fmt.Sprintf(formatWOTimeExp, AlwaysLabel))
+	g := captureLoggerOutput(Always, format, a)
+
+	if err != nil {
+		t.Fatalf("Failed to compile regexp '%v': %v", e.String(), err)
+	}
+
+	if !e.MatchString(g) {
+		t.Fatalf("Always should produce a pattern '%v' but produces: %v", e.String(), g)
 	}
 }
 

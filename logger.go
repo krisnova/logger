@@ -21,9 +21,8 @@ import (
 	"strings"
 	"time"
 
-	lol "github.com/kris-nova/lolgopher"
-
 	"github.com/fatih/color"
+	lol "github.com/kris-nova/lolgopher"
 )
 
 type Logger func(format string, a ...interface{})
@@ -44,6 +43,7 @@ var (
 	FabulousWriter     = lol.NewLolWriter()
 	FabulousTrueWriter = lol.NewTruecolorLolWriter()
 	TestMode           = false
+	Timestamps         = true
 )
 
 func Always(format string, a ...interface{}) {
@@ -132,7 +132,6 @@ func Debug(format string, a ...interface{}) {
 
 		fmt.Fprintf(w, s)
 
-
 	}
 }
 
@@ -165,15 +164,29 @@ func extractLoggerArgs(format string, a ...interface{}) ([]interface{}, io.Write
 		}
 	}
 
-
 	return a, w
 }
 
 func label(format, label string) string {
+	if Timestamps {
+		return labelWithTime(format, label)
+	} else {
+		return labelWithoutTime(format, label)
+	}
+}
+
+func labelWithTime(format, label string) string {
 	t := time.Now()
 	rfct := t.Format(time.RFC3339)
 	if !strings.Contains(format, "\n") {
 		format = fmt.Sprintf("%s%s", format, "\n")
 	}
 	return fmt.Sprintf("%s [%s]  %s", rfct, label, format)
+}
+
+func labelWithoutTime(format, label string) string {
+	if !strings.Contains(format, "\n") {
+		format = fmt.Sprintf("%s%s", format, "\n")
+	}
+	return fmt.Sprintf("[%s]  %s", label, format)
 }
