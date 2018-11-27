@@ -2,6 +2,8 @@
 
 Ported from it's [original location](https://github.com/kubicorn/kubicorn/tree/master/pkg/logger) in the Kubicorn code base.
 
+<center><img src="/screenshot.png"></center>
+
 # Rainbow logs
 
 ```go
