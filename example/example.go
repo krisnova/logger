@@ -1,10 +1,3 @@
-# logger
-
-Ported from it's [original location](https://github.com/kubicorn/kubicorn/tree/master/pkg/logger) in the Kubicorn code base.
-
-Simple golang logger
-
-```go
 package main
 
 import (
@@ -26,6 +19,10 @@ func main(){
 	// Off
 	//logger.Level = 0
 
+	logger.Always("This is always printed")
+
+	logger.Success("Hooray a good thing happened!")
+
 	err := fmt.Errorf("New error")
 	logger.Info("we found an error: %v", err)
 
@@ -39,5 +36,3 @@ func main(){
 	// Now we have to exit
 	os.Exit(123)
 }
-
-```
