@@ -59,7 +59,7 @@ func Always(format string, a ...interface{}) {
 		}
 	}
 
-	fmt.Fprintf(w, s)
+	fmt.Fprint(w, s)
 }
 
 func Critical(format string, a ...interface{}) {
@@ -76,7 +76,7 @@ func Critical(format string, a ...interface{}) {
 			}
 		}
 
-		fmt.Fprintf(w, s)
+		fmt.Fprint(w, s)
 	}
 }
 
@@ -94,7 +94,7 @@ func Info(format string, a ...interface{}) {
 			}
 		}
 
-		fmt.Fprintf(w, s)
+		fmt.Fprint(w, s)
 	}
 }
 
@@ -112,7 +112,7 @@ func Success(format string, a ...interface{}) {
 			}
 		}
 
-		fmt.Fprintf(w, s)
+		fmt.Fprint(w, s)
 	}
 }
 
@@ -130,8 +130,7 @@ func Debug(format string, a ...interface{}) {
 			}
 		}
 
-		fmt.Fprintf(w, s)
-
+		fmt.Fprint(w, s)
 	}
 }
 
@@ -149,7 +148,7 @@ func Warning(format string, a ...interface{}) {
 			}
 		}
 
-		fmt.Fprintf(w, s)
+		fmt.Fprint(w, s)
 	}
 }
 
