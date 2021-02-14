@@ -1,4 +1,4 @@
-// Copyright © 2017
+// Copyright © 2021 Kris Nóva <kris@nivenly.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,172 +20,167 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/fatih/color"
-	lol "github.com/kris-nova/lolgopher"
 )
 
-type Logger func(format string, a ...interface{})
+type LoggerFunc func(format string, a ...interface{})
+
+//type Logger interface {
+//	LineBytes(prefix, format string, a ...interface{}) []byte
+//	Line(prefix, format string, a ...interface{}) string
+//	Always(format string, a ...interface{})
+//	Success(format string, a ...interface{})
+//	Debug(format string, a ...interface{})
+//	Info(format string, a ...interface{})
+//	Warning(format string, a ...interface{})
+//	Critical(format string, a ...interface{})
+//}
 
 const (
-	AlwaysLabel   = "✿"
-	CriticalLabel = "✖"
-	DebugLabel    = "▶"
-	InfoLabel     = "ℹ"
-	SuccessLabel  = "✔"
-	WarningLabel  = "!"
+	// [Log Constants]
+	//
+	// These are the bitwise values for the
+	// various log options.
+	//
+	// Also these are the string prefixes
+	// for the log lines.
+	LogAlways     = 1
+	PreAlways     = "Always    "
+	LogSuccess    = 2
+	PreSuccess    = "Success   "
+	LogCritical   = 4
+	PreCritical   = "Critical  "
+	LogWarning    = 8
+	PreWarning    = "Warning   "
+	LogInfo       = 16
+	PreInfo       = "Info      "
+	LogDebug      = 32
+	PreDebug      = "Debug     "
+	LogDeprecated = 64
+	PreDeprecated = "Deprecated"
+
+	LogLegacyLevel2           = LogAlways | LogSuccess | LogCritical | LogWarning | LogInfo
+	LogLegacyLevel2Deprecated = LogLegacyLevel2 | LogDeprecated
+
+	// Enable all Logging levels
+	// [127]
+	LogEverything = LogAlways | LogSuccess | LogDebug | LogInfo | LogWarning | LogCritical | LogDeprecated
 )
+
+type WriterMode int
 
 var (
-	Level              = 2
-	Color              = true
-	Fabulous           = false
-	FabulousWriter     = lol.NewLolWriter()
-	FabulousTrueWriter = lol.NewTruecolorLolWriter()
-	TestMode           = false
-	Timestamps         = true
+
+	// BitwiseLevel is the preferred
+	// way of managing log levels.
+	//
+	// ----- [ Bitwise Chart ] ------
+	//
+	// LogEverything (All Levels)
+	// LogAlways
+	// LogSuccess
+	// LogCritical
+	// LogWarning
+	// LogInfo
+	// LogDebug
+	// LogDeprecated
+	//
+	// TODO @kris-nova In the next release flip to LogEverything
+	// BitwiseLevel = LogEverything
+	BitwiseLevel = LogLegacyLevel2Deprecated
+
+	// A custom io.Writer to use regardless of Mode
+	Writer io.Writer = os.Stdout
+
+	// Layout is the time layout string to use
+	Layout string = time.RFC3339
 )
 
-func Always(format string, a ...interface{}) {
-	a, w := extractLoggerArgs(format, a...)
-	s := fmt.Sprintf(label(format, AlwaysLabel), a...)
-
-	if !TestMode {
-		if Color {
-			w = color.Output
-			s = color.GreenString(s)
-		} else if Fabulous {
-			w = FabulousWriter
-		}
-	}
-
-	fmt.Fprint(w, s)
+// LineBytes will format a log line, and return
+// a slice of bytes []byte
+func LineBytes(prefix, format string, a ...interface{}) []byte {
+	return []byte(Line(prefix, format, a...))
 }
 
-func Critical(format string, a ...interface{}) {
-	if Level >= 1 {
-		a, w := extractLoggerArgs(format, a...)
-		s := fmt.Sprintf(label(format, CriticalLabel), a...)
-
-		if !TestMode {
-			if Color {
-				w = color.Output
-				s = color.RedString(s)
-			} else if Fabulous {
-				w = FabulousWriter
-			}
-		}
-
-		fmt.Fprint(w, s)
+// Line will format a log line, and return a string
+func Line(prefix, format string, a ...interface{}) string {
+	if !strings.Contains(format, "\n") {
+		format = fmt.Sprintf("%s%s", format, "\n")
 	}
-}
-
-func Info(format string, a ...interface{}) {
-	if Level >= 3 {
-		a, w := extractLoggerArgs(format, a...)
-		s := fmt.Sprintf(label(format, InfoLabel), a...)
-
-		if !TestMode {
-			if Color {
-				w = color.Output
-				s = color.CyanString(s)
-			} else if Fabulous {
-				w = FabulousWriter
-			}
-		}
-
-		fmt.Fprint(w, s)
-	}
-}
-
-func Success(format string, a ...interface{}) {
-	if Level >= 3 {
-		a, w := extractLoggerArgs(format, a...)
-		s := fmt.Sprintf(label(format, SuccessLabel), a...)
-
-		if !TestMode {
-			if Color {
-				w = color.Output
-				s = color.CyanString(s)
-			} else if Fabulous {
-				w = FabulousWriter
-			}
-		}
-
-		fmt.Fprint(w, s)
-	}
-}
-
-func Debug(format string, a ...interface{}) {
-	if Level >= 4 {
-		a, w := extractLoggerArgs(format, a...)
-		s := fmt.Sprintf(label(format, DebugLabel), a...)
-
-		if !TestMode {
-			if Color {
-				w = color.Output
-				s = color.GreenString(s)
-			} else if Fabulous {
-				w = FabulousWriter
-			}
-		}
-
-		fmt.Fprint(w, s)
-	}
-}
-
-func Warning(format string, a ...interface{}) {
-	if Level >= 2 {
-		a, w := extractLoggerArgs(format, a...)
-		s := fmt.Sprintf(label(format, WarningLabel), a...)
-
-		if !TestMode {
-			if Color {
-				w = color.Output
-				s = color.GreenString(s)
-			} else if Fabulous {
-				w = FabulousWriter
-			}
-		}
-
-		fmt.Fprint(w, s)
-	}
-}
-
-func extractLoggerArgs(format string, a ...interface{}) ([]interface{}, io.Writer) {
-	var w io.Writer = os.Stdout
-
-	if n := len(a); n > 0 {
-		// extract an io.Writer at the end of a
-		if value, ok := a[n-1].(io.Writer); ok {
-			w = value
-			a = a[0 : n-1]
-		}
-	}
-
-	return a, w
-}
-
-func label(format, label string) string {
 	if Timestamps {
-		return labelWithTime(format, label)
+		now := time.Now()
+		fNow := now.Format(Layout)
+		prefix = fmt.Sprintf("%s [%s]", fNow, prefix)
 	} else {
-		return labelWithoutTime(format, label)
+		prefix = fmt.Sprintf("[%s]", prefix)
+	}
+	return fmt.Sprintf("%s  %s", prefix, fmt.Sprintf(format, a...))
+}
+
+// Always
+func Always(format string, a ...interface{}) {
+	d()
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogAlways != 0 {
+		fmt.Fprint(Writer, Line(PreAlways, format, a...))
 	}
 }
 
-func labelWithTime(format, label string) string {
-	t := time.Now()
-	rfct := t.Format(time.RFC3339)
-	if !strings.Contains(format, "\n") {
-		format = fmt.Sprintf("%s%s", format, "\n")
+// Success
+func Success(format string, a ...interface{}) {
+	d()
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogSuccess != 0 {
+		fmt.Fprint(Writer, Line(PreSuccess, format, a...))
 	}
-	return fmt.Sprintf("%s [%s]  %s", rfct, label, format)
 }
 
-func labelWithoutTime(format, label string) string {
-	if !strings.Contains(format, "\n") {
-		format = fmt.Sprintf("%s%s", format, "\n")
+// Debug
+func Debug(format string, a ...interface{}) {
+	d()
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogDebug != 0 {
+		fmt.Fprint(Writer, Line(PreDebug, format, a...))
 	}
-	return fmt.Sprintf("[%s]  %s", label, format)
+}
+
+// Info
+func Info(format string, a ...interface{}) {
+	d()
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogInfo != 0 {
+		fmt.Fprint(Writer, Line(PreInfo, format, a...))
+	}
+}
+
+// Warning
+func Warning(format string, a ...interface{}) {
+	d()
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogWarning != 0 {
+		fmt.Fprint(Writer, Line(PreWarning, format, a...))
+	}
+}
+
+// Critical
+func Critical(format string, a ...interface{}) {
+	d()
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogCritical != 0 {
+		fmt.Fprint(Writer, Line(PreCritical, format, a...))
+	}
+}
+
+// Used to show deprecated log lines
+func Deprecated(format string, a ...interface{}) {
+	a = legacyFindWriter(a...)
+	if BitwiseLevel&LogDeprecated != 0 {
+		fmt.Fprint(Writer, Line(PreDeprecated, format, a...))
+	}
+}
+
+// d is used by every function
+// and is an easy way to add
+// global logic/state to the logger
+func d() {
+	checkDeprecatedValues()
 }
