@@ -17,7 +17,12 @@ package logger
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
+	"time"
+
+	"github.com/fatih/color"
+	"github.com/kris-nova/novaarchive/logger"
 )
 
 const (
@@ -204,5 +209,36 @@ func TestAlwaysCriticalDebugOnly(t *testing.T) {
 	actual := buffer.String()
 	if expected != actual {
 		t.Errorf("Expected (%s) Actual (%s)", expected, actual)
+	}
+}
+
+// Note: Taken from the use case in eksctl
+// https://github.com/michaelbeaumont/eksctl/blob/a1564e4cf825be9fd8936794e230d3b5c2d267ea/cmd/eksctl/main.go#L78-L79
+func TestLineOverride(t *testing.T) {
+	Level = -1
+	BitwiseLevel = LogAlways
+	Line = func(prefix, format string, a ...interface{}) string {
+		if !strings.Contains(format, "\n") {
+			format = fmt.Sprintf("%s%s", format, "\n")
+		}
+		if logger.Timestamps {
+			now := time.Now()
+			fNow := now.Format(logger.Layout)
+			prefix = fmt.Sprintf("%s [%s]", fNow, prefix)
+		} else {
+			prefix = fmt.Sprintf("[%s]", prefix)
+		}
+		out := fmt.Sprintf("%s  %s", prefix, fmt.Sprintf(format, a...))
+		out = color.GreenString(out)
+		return out
+	}
+	buffer := new(bytes.Buffer)
+	Writer = buffer
+	Always(TestFormat, testA...)
+	actual := buffer.String()
+	expected := Line(PreAlways, TestFormat, testA...)
+	if actual != expected {
+		t.Errorf("actual(%s) != expected(%s)", actual, expected)
+		t.FailNow()
 	}
 }

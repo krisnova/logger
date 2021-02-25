@@ -24,17 +24,6 @@ import (
 
 type LoggerFunc func(format string, a ...interface{})
 
-//type Logger interface {
-//	LineBytes(prefix, format string, a ...interface{}) []byte
-//	Line(prefix, format string, a ...interface{}) string
-//	Always(format string, a ...interface{})
-//	Success(format string, a ...interface{})
-//	Debug(format string, a ...interface{})
-//	Info(format string, a ...interface{})
-//	Warning(format string, a ...interface{})
-//	Critical(format string, a ...interface{})
-//}
-
 const (
 	// [Log Constants]
 	//
