@@ -102,7 +102,7 @@ func LineBytes(prefix, format string, a ...interface{}) []byte {
 }
 
 // Line will format a log line, and return a string
-func Line(prefix, format string, a ...interface{}) string {
+var Line = func(prefix, format string, a ...interface{}) string {
 	if !strings.Contains(format, "\n") {
 		format = fmt.Sprintf("%s%s", format, "\n")
 	}
