@@ -14,7 +14,7 @@
 
 package main
 
-import "github.com/kris-nova/novaarchive/logger"
+import "github.com/kris-nova/logger"
 
 func main() {
 

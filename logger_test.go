@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/kris-nova/novaarchive/logger"
+	"github.com/kris-nova/logger"
 )
 
 const (
