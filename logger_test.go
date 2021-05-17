@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/kris-nova/logger"
 )
 
 const (
@@ -221,9 +220,9 @@ func TestLineOverride(t *testing.T) {
 		if !strings.Contains(format, "\n") {
 			format = fmt.Sprintf("%s%s", format, "\n")
 		}
-		if logger.Timestamps {
+		if Timestamps {
 			now := time.Now()
-			fNow := now.Format(logger.Layout)
+			fNow := now.Format(Layout)
 			prefix = fmt.Sprintf("%s [%s]", fNow, prefix)
 		} else {
 			prefix = fmt.Sprintf("[%s]", prefix)
